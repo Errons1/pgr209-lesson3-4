@@ -5,25 +5,29 @@ import java.net.Socket;
 
 public class HttpClient {
 
-    public HttpClient(String ip4, int port, String request) {
-    }
+    public Socket socket;
 
-    public static void main(String[] args) throws IOException {
-        var socket = new Socket("httpbin.org", 80);
+    public HttpClient (String host, int port, String requestTarget) throws IOException{
+        socket = new Socket(host, port);
 
 //        sett in get request fra clientside
         socket.getOutputStream().write(
-                ("GET /html HTTP/1.1\r\n " +
-                 "Connection: keep alive\r\n" +
-                 "Host: httpbin.org\r\n" +
-                 "\r\n").getBytes());
-
+                ("GET /" + requestTarget + " HTTP/1.1\r\n" +
+                "Connection: close\r\n" +
+                "Host: " + host + "\r\n" +
+                "\r\n").getBytes()
+        );
 
         int c;
         while ((c = socket.getInputStream().read()) != -1) {
             System.out.print((char)c);
         }
-
     }
+
+    public int getSockedCode() {
+        String socetCode = socket.toString();
+        return 200;
+    }
+
 
 }
