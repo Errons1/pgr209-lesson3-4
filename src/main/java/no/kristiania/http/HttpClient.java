@@ -7,6 +7,10 @@ public class HttpClient {
 
     public Socket socket;
 
+/*      host = Ipaddress of server-client
+*       port = 80 for http and 443 https
+*       requestTarget = /*type* example: /html
+* */
     public HttpClient (String host, int port, String requestTarget) throws IOException{
         socket = new Socket(host, port);
 
@@ -24,9 +28,16 @@ public class HttpClient {
         }
     }
 
-    public int getSockedCode() {
-        String socetCode = socket.toString();
-        return 200;
+    public int getSockedCode() throws IOException {
+        var builder = new StringBuilder();
+        int c = 0;
+
+        while ((c = socket.getInputStream().read()) != '\r') {
+            builder.append((char) c);
+        }
+
+        String string = String.valueOf(builder.toString().split(" ")[1]);
+        return Integer.parseInt(string);
     }
 
 
