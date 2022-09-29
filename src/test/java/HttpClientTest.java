@@ -12,4 +12,5 @@ public class HttpClientTest {
         assertEquals(200, client.getSockedCode());
     }
 
+
 }

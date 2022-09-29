@@ -2,43 +2,42 @@ package no.kristiania.http;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 public class HttpClient {
+    Socket client;
+    HttpMessage message;
 
-    public Socket socket;
+//    (String.format(
+//            "GET /%s HTTP/1.1\r\n" +
+//            "Connection: close\r\n" +
+//            "Host: %s\r\n",
+//    requestTarget, host
+//                )
 
-/*      host = Ipaddress of server-client
-*       port = 80 for http and 443 https
-*       requestTarget = /*type* example: /html
-* */
-    public HttpClient (String host, int port, String requestTarget) throws IOException{
-        socket = new Socket(host, port);
+    public HttpClient(String host, int port, String requestTarget) throws IOException {
+        client = new Socket(host, port);
 
-//        sett in get request fra clientside
-        socket.getOutputStream().write(
-                ("GET /" + requestTarget + " HTTP/1.1\r\n" +
+        client.getOutputStream().write((
+                "GET /" + requestTarget + " HTTP/1.1\r\n" +
                 "Connection: close\r\n" +
-                "Host: " + host + "\r\n" +
-                "\r\n").getBytes()
+                "Host: " + host + "\r\n\r\n").getBytes(StandardCharsets.UTF_8)
         );
 
-        int c;
-        while ((c = socket.getInputStream().read()) != -1) {
-            System.out.print((char)c);
-        }
+        message = new HttpMessage(client);
     }
 
-    public int getSockedCode() throws IOException {
-        var builder = new StringBuilder();
-        int c = 0;
-
-        while ((c = socket.getInputStream().read()) != '\r') {
-            builder.append((char) c);
-        }
-
-        String string = String.valueOf(builder.toString().split(" ")[1]);
-        return Integer.parseInt(string);
+    public int getSockedCode() {
+        String firstLine = message.getFirstLine();
+        String code = firstLine.split(" ")[1];
+        return Integer.parseInt(code);
     }
 
+    public static void main(String[] args) {
+        String test = "test";
+        String test1 = String.format("This is a %s", test);
+        System.out.println(test1);
+    }
 
 }
