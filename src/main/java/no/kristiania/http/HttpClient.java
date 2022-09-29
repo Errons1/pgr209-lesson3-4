@@ -39,6 +39,10 @@ public class HttpClient {
         return message.getHeaders().get(fieldName);
     }
 
+    public String getBody(){
+        return message.getRespondBody();
+    }
+
     public static void main(String[] args) {
         String test = "test";
         String test1 = String.format("This is a %s", test);

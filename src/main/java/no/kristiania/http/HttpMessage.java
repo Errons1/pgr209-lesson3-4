@@ -2,6 +2,7 @@ package no.kristiania.http;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,12 +19,14 @@ import java.util.Map;
 public class HttpMessage {
     String firstLine;
     Map<String, String> headers;
+    int contentLength;
     String respondBody;
 
     public HttpMessage(Socket client) throws IOException {
         firstLine = readLine(client);
         headers = readHeaders(client);
-//        respondBody = readBody(client);
+        contentLength = readContentLength();
+        respondBody = readBody(client);
     }
 
     private String readLine(Socket client) throws IOException {
@@ -52,8 +55,18 @@ public class HttpMessage {
         return headers;
     }
 
-    private String readBody(Socket client) {
+    private int readContentLength() {
+        String length = headers.get("Content-Length");
+        return Integer.parseInt(length);
+    }
 
+    private String readBody(Socket client) throws IOException {
+        var builder = new StringBuilder();
+
+        for (int i = 0; i < contentLength; i++) {
+            var tmp = client.getInputStream().readAllBytes();
+            String test = new String(tmp, StandardCharsets.UTF_8);
+        }
         return null;
     }
 
@@ -64,6 +77,9 @@ public class HttpMessage {
     }
     public Map<String, String> getHeaders() {
         return headers;
+    }
+    public int getContentLength() {
+        return contentLength;
     }
     public String getRespondBody() {
         return respondBody;
