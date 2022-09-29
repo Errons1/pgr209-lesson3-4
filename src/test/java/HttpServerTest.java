@@ -11,8 +11,8 @@ public class HttpServerTest {
 
     @Test
     void serverRespond404() throws IOException {
-        var server = new HttpServer(0);
-        var client = new HttpClient("localhost", server.getPort(), "randome");
+        var server = new HttpServer(9080);
+        var client = new HttpClient("localhost", server.getPort(), "random");
 
         assertEquals(404, client.getSockedCode());
     }

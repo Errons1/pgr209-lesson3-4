@@ -18,13 +18,15 @@ import java.util.Map;
 public class HttpMessage {
     private final String firstLine;
     private final Map<String, String> headers;
-    private final int contentLength;
+    private int contentLength = 0;
     private final String respondBody;
 
     public HttpMessage(Socket client) throws IOException {
         firstLine = readLine(client);
         headers = readHeaders(client);
-        contentLength = readContentLength();
+        if (headers.containsKey("Content-Length")) {
+            contentLength = readContentLength();
+        }
         respondBody = readBody(client);
     }
 
