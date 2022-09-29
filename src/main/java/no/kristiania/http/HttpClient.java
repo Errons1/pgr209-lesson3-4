@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 
 public class HttpClient {
-    Socket client;
-    HttpMessage message;
+    private Socket client;
+    private final HttpMessage message;
 
     public HttpClient(String host, int port, String requestTarget) throws IOException {
         client = new Socket(host, port);

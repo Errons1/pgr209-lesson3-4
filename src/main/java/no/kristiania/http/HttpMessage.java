@@ -16,10 +16,10 @@ import java.util.Map;
 * */
 
 public class HttpMessage {
-    String firstLine;
-    Map<String, String> headers;
-    int contentLength;
-    String respondBody;
+    private final String firstLine;
+    private final Map<String, String> headers;
+    private final int contentLength;
+    private final String respondBody;
 
     public HttpMessage(Socket client) throws IOException {
         firstLine = readLine(client);
