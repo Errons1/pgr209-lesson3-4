@@ -15,7 +15,6 @@ import java.util.Map;
 *
 * */
 
-
 public class HttpMessage {
     String firstLine;
     Map<String, String> headers;
