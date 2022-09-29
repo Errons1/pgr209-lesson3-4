@@ -31,13 +31,13 @@ public class HttpMessage {
 
     private String readLine(Socket client) throws IOException {
         var builder = new StringBuilder();
-        int c = 0;
+        int c;
 
 //        Reads til end of first line ==  "... \r\n"
         while((c = client.getInputStream().read()) != '\r') {
             builder.append((char)c);
         }
-        c = client.getInputStream().read(); //read the next \n
+        client.getInputStream().read(); //read the next \n
 
         return builder.toString();
     }
@@ -61,13 +61,11 @@ public class HttpMessage {
     }
 
     private String readBody(Socket client) throws IOException {
-        var builder = new StringBuilder();
-
-        for (int i = 0; i < contentLength; i++) {
-            var tmp = client.getInputStream().readAllBytes();
-            String test = new String(tmp, StandardCharsets.UTF_8);
+        var body = new byte[contentLength];
+        for (int i = 0; i < body.length; i++) {
+            body[i] = (byte) client.getInputStream().read();
         }
-        return null;
+        return new String(body, StandardCharsets.UTF_8);
     }
 
 
@@ -84,6 +82,5 @@ public class HttpMessage {
     public String getRespondBody() {
         return respondBody;
     }
-
 
 }
