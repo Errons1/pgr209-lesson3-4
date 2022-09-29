@@ -12,5 +12,11 @@ public class HttpClientTest {
         assertEquals(200, client.getSockedCode());
     }
 
+    @Test
+    void shouldReadStatusCode404() throws IOException {
+        var client = new HttpClient("httpbin.org", 80, "randomethingsalskdjlaskdj");
+        assertEquals(404, client.getSockedCode());
+    }
+
 
 }
