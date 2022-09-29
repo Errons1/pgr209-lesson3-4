@@ -18,5 +18,11 @@ public class HttpClientTest {
         assertEquals(404, client.getSockedCode());
     }
 
+    @Test
+    void shouldReadHeaders() throws IOException {
+        var client = new HttpClient("httpbin.org", 80, "html");
+        assertEquals("text/html; charset=utf-8", client.getHeader("Content-Type"));
+        assertEquals("3741", client.getHeader("Content-Length"));
+    }
 
 }

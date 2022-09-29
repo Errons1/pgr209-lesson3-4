@@ -2,6 +2,7 @@ package no.kristiania.http;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 
 /*
@@ -20,12 +21,12 @@ public class HttpMessage {
     String respondBody;
 
     public HttpMessage(Socket client) throws IOException {
-        firstLine = readFirstLine(client);
-//        headers = readHeaders(client);
+        firstLine = readLine(client);
+        headers = readHeaders(client);
 //        respondBody = readBody(client);
     }
 
-    private String readFirstLine(Socket client) throws IOException {
+    private String readLine(Socket client) throws IOException {
         var builder = new StringBuilder();
         int c = 0;
 
@@ -39,15 +40,16 @@ public class HttpMessage {
     }
 
     private Map<String, String> readHeaders(Socket client) throws IOException {
-        var builder = new StringBuilder();
-        int c;
+        Map<String, String> headers = new HashMap<>();
+        String line;
 
-//        Reads til end of first line ==  "... \r\n"
-        while((c = client.getInputStream().read()) != '\r') {
-            builder.append((char)c);
+//        When readLine meets only \r\n it returns an empty string
+        while(!(line = readLine(client)).isEmpty()) {
+            var header= line.split(": ");
+            headers.put(header[0], header[1]);
         }
 
-        return null;
+        return headers;
     }
 
     private String readBody(Socket client) {

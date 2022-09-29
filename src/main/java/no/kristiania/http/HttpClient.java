@@ -22,7 +22,8 @@ public class HttpClient {
         client.getOutputStream().write((
                 "GET /" + requestTarget + " HTTP/1.1\r\n" +
                 "Connection: close\r\n" +
-                "Host: " + host + "\r\n\r\n").getBytes(StandardCharsets.UTF_8)
+                "Host: " + host + "\r\n" +
+                "\r\n").getBytes(StandardCharsets.UTF_8)
         );
 
         message = new HttpMessage(client);
@@ -32,6 +33,10 @@ public class HttpClient {
         String firstLine = message.getFirstLine();
         String code = firstLine.split(" ")[1];
         return Integer.parseInt(code);
+    }
+
+    public String getHeader(String fieldName) {
+        return message.getHeaders().get(fieldName);
     }
 
     public static void main(String[] args) {
