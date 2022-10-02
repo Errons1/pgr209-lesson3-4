@@ -17,17 +17,17 @@ public class HttpServer {
         start();
     }
 
-    public Path getServerRoot() {
-        return serverRoot;
-    }
-
     private void start() {
 //        Makes new thread for taking the server run
         new Thread(() -> {
             while (true) {
                 try {
                     var clientSocket = server.accept();
-                    handleClientSocket(clientSocket);
+                    try {
+                        handleClientSocket(clientSocket);
+                    } catch (Exception e) {
+                        error500(clientSocket);
+                    }
                     clientSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -36,8 +36,21 @@ public class HttpServer {
         }).start();
     }
 
+    private void error500(Socket client) throws IOException {
+        client.getOutputStream().write(
+                """
+                HTTP/1.1 500 INTERNAL SERVER ERROR\r
+                Content-Type: text/html; charset=utf-8\r
+                Connection: close\r
+                \r
+                """.getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
     private void handleClientSocket(Socket client) throws IOException {
         var message = new HttpMessage(client);
+        // 500 error test
+        if (message.getFirstLine().split(" ")[1].equals("/500")) throw new IOException();
 
 //        if request == GET / HTTP/1.1
         if (message.getFirstLine().split(" ")[1].equals("/")) {
@@ -73,8 +86,12 @@ public class HttpServer {
     }
 
 
+//    Getters & setters
     public int getPort() {
         return server.getLocalPort();
+    }
+    public Path getServerRoot() {
+        return serverRoot;
     }
 
 }

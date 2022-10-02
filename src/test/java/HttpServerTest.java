@@ -24,17 +24,18 @@ public class HttpServerTest {
         var client = new HttpClient("localhost", server.getPort(), "");
 
         assertEquals(200, client.getSockedCode());
-        assertEquals("<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "<meta charset=\"UTF-8\">\n" +
-                "<title>Index</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "<h1>Hi I am the Index page!</h1>\n" +
-                "<p>Dette er Norske bokstaver for test ø æ å.</p>\n" +
-                "</body>\n" +
-                "</html>", client.getBody());
+        assertEquals("""
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <title>Index</title>
+                </head>
+                <body>
+                <h1>Hi I am the Index page!</h1>
+                <p>Dette er Norske bokstaver for test ø æ å.</p>
+                </body>
+                </html>""", client.getBody());
     }
 
     @Test
@@ -49,6 +50,23 @@ public class HttpServerTest {
 
     @Test
     void shouldReturn500OnUnhandledErrors() throws IOException {
-
+        var server = new HttpServer(0, Path.of("src/test/resources/index.html"));
+        var client = new HttpClient("localhost", server.getPort(), "500");
+        assertEquals(500, client.getSockedCode());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
