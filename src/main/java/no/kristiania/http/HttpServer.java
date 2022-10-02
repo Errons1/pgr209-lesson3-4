@@ -26,7 +26,7 @@ public class HttpServer {
                     try {
                         handleClientSocket(clientSocket);
                     } catch (Exception e) {
-                        error500(clientSocket);
+                        errorHandler(500, clientSocket);
                     }
                     clientSocket.close();
                 } catch (IOException e) {
@@ -36,21 +36,8 @@ public class HttpServer {
         }).start();
     }
 
-    private void error500(Socket client) throws IOException {
-        client.getOutputStream().write(
-                """
-                HTTP/1.1 500 INTERNAL SERVER ERROR\r
-                Content-Type: text/html; charset=utf-8\r
-                Connection: close\r
-                \r
-                """.getBytes(StandardCharsets.UTF_8)
-        );
-    }
-
     private void handleClientSocket(Socket client) throws IOException {
         var message = new HttpMessage(client);
-        // 500 error test
-        if (message.getFirstLine().split(" ")[1].equals("/500")) throw new IOException();
 
 //        if request == GET / HTTP/1.1
         if (message.getFirstLine().split(" ")[1].equals("/")) {
@@ -70,19 +57,43 @@ public class HttpServer {
             return;
         }
 
-        client.getOutputStream().write(
-                        """
-                        HTTP/1.1 404 NOT FOUND\r
-                        Content-Type: text/html; charset=utf-8\r
-                        Content-Length: 233\r
-                        Connection: close\r
-                        \r
-                        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-                        <title>404 Not Found</title>
-                        <h1>Not Found</h1>
-                        <p>The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.</p>
-                        """.getBytes(StandardCharsets.UTF_8)
+
+        // 500 error test
+        if (message.getFirstLine().split(" ")[1].equals("/500")) throw new IOException();
+
+//        If method arrives here, the URL does not exist and return 404 error
+        errorHandler(404, client);
+
+    }
+    
+    private void errorHandler(int errorCode, Socket client) throws IOException {
+        String errorMessage;
+        Path errorHtmlFile;
+
+        switch (errorCode) {
+            case 500 -> {
+                errorMessage = "500 INTERNAL SERVER ERROR";
+                errorHtmlFile = Path.of("src/main/resources/error500.html");
+            }
+            default -> {
+                errorMessage = "404 FILE NOT FOUND";
+                errorHtmlFile = Path.of("src/main/resources/error404.html");
+            }
+        }
+
+        client.getOutputStream().write((
+                        "HTTP/1.1 "+errorMessage+"\r\n" +
+                        "Content-Type: text/html; charset=utf-8\r\n" +
+                        "Content-Length: " + errorHtmlFile.toFile().length() + "\r\n" +
+                        "Connection: close\r\n" +
+                        "\r\n"
+                ).getBytes(StandardCharsets.UTF_8)
         );
+
+        try (var fileInputStream = new FileInputStream(errorHtmlFile.toFile())) {
+            fileInputStream.transferTo(client.getOutputStream());
+        }
+
     }
 
 
@@ -95,24 +106,3 @@ public class HttpServer {
     }
 
 }
-
-
-//    Though of doing some auto message system based on some code, might come back to this
-//    private String respondHeaderMetaData(int code, int length, String body) {
-//        String headerText = MessageFormat.format("""
-//                HTTP/1.1 {0}\r
-//                Content-Type: text/html\r
-//                Content-Length: {1}\r
-//                Connection: close\r
-//                \r
-//
-//                """, ServerCode(code));
-//        return headerText;
-//    }
-//
-//    private String ServerCode(int code) {
-//        return switch(code) {
-//            case 200 -> "200 OK";
-//            default -> "404 NOT FOUND";
-//        };
-//    }
