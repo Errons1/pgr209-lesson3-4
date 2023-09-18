@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class HttpServer {
-
     private final Path serverRoot;
     ServerSocket server;
 
@@ -37,35 +36,71 @@ public class HttpServer {
     }
 
     private void handleClientSocket(Socket client) throws IOException {
-        var message = new HttpMessage(client);
+        HttpMessage message = new HttpMessage(client);
+        Path returnFile = serverRoot;
 
 //        if request == GET / HTTP/1.1
         if (message.getFirstLine().split(" ")[1].equals("/")) {
-            client.getOutputStream().write((
-                    "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: text/html; charset=utf-8\r\n" +
-                    "Content-Length: " + serverRoot.toFile().length() + "\r\n" +
-                    "Connection: close\r\n" +
-                    "\r\n"
-                    ).getBytes(StandardCharsets.UTF_8)
-            );
 
-            try (var fileInputStream = new FileInputStream(serverRoot.toFile())) {
-                fileInputStream.transferTo(client.getOutputStream());
+//            if client does not have cookie, prime it
+            if (message.getCookies() == null) {
+                client.getOutputStream().write((
+                                "HTTP/1.1 200 OK\r\n" +
+                                        "Content-Type: text/html; charset=utf-8\r\n" +
+                                        "Content-Length: " + returnFile.toFile().length() + "\r\n" +
+//                                        This line sets the cookie
+                                        "Set-Cookie: language=NOR\r\n" +
+                                        "Connection: close\r\n" +
+                                        "\r\n"
+                        ).getBytes(StandardCharsets.UTF_8)
+                );
+
+
+//                cookie is set to NOR
+            } else if (message.getCookies().get("language").equals("NOR")) {
+                returnFile = Path.of("src/main/resources/indexNor.html");
+
+                client.getOutputStream().write((
+                                "HTTP/1.1 200 OK\r\n" +
+                                        "Content-Type: text/html; charset=utf-8\r\n" +
+                                        "Content-Length: " + returnFile.toFile().length() + "\r\n" +
+                                        "Connection: close\r\n" +
+                                        "\r\n"
+                        ).getBytes(StandardCharsets.UTF_8)
+                );
+
+//                cookie is set to ENG
+            } else if (message.getCookies().get("language").equals("ENG")) {
+                returnFile = Path.of("src/main/resources/indexEng.html");
+
+                client.getOutputStream().write((
+                                "HTTP/1.1 200 OK\r\n" +
+                                        "Content-Type: text/html; charset=utf-8\r\n" +
+                                        "Content-Length: " + returnFile.toFile().length() + "\r\n" +
+                                        "Connection: close\r\n" +
+                                        "\r\n"
+                        ).getBytes(StandardCharsets.UTF_8)
+                );
             }
 
+//            this takes the file from resource and makes it to byte stream
+            FileInputStream fileInputStream = new FileInputStream(returnFile.toFile());
+            fileInputStream.transferTo(client.getOutputStream());
+            fileInputStream.close();
             return;
         }
 
 
-        // 500 error test
-        if (message.getFirstLine().split(" ")[1].equals("/500")) throw new IOException();
+//        500 error test
+        if (message.getFirstLine().split(" ")[1].equals("/500")) {
+            throw new IOException();
+        }
 
 //        If method arrives here, the URL does not exist and return 404 error
         errorHandler(404, client);
 
     }
-    
+
     private void errorHandler(int errorCode, Socket client) throws IOException {
         String errorMessage;
         Path errorHtmlFile;
@@ -82,25 +117,25 @@ public class HttpServer {
         }
 
         client.getOutputStream().write((
-                        "HTTP/1.1 "+errorMessage+"\r\n" +
-                        "Content-Type: text/html; charset=utf-8\r\n" +
-                        "Content-Length: " + errorHtmlFile.toFile().length() + "\r\n" +
-                        "Connection: close\r\n" +
-                        "\r\n"
+                        "HTTP/1.1 " + errorMessage + "\r\n" +
+                                "Content-Type: text/html; charset=utf-8\r\n" +
+                                "Content-Length: " + errorHtmlFile.toFile().length() + "\r\n" +
+                                "Connection: close\r\n" +
+                                "\r\n"
                 ).getBytes(StandardCharsets.UTF_8)
         );
 
-        try (var fileInputStream = new FileInputStream(errorHtmlFile.toFile())) {
-            fileInputStream.transferTo(client.getOutputStream());
-        }
-
+        FileInputStream fileInputStream = new FileInputStream(errorHtmlFile.toFile());
+        fileInputStream.transferTo(client.getOutputStream());
+        fileInputStream.close();
     }
 
 
-//    Getters & setters
+    //    Getters & setters
     public int getPort() {
         return server.getLocalPort();
     }
+
     public Path getServerRoot() {
         return serverRoot;
     }
